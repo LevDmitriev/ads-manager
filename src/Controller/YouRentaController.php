@@ -50,7 +50,8 @@ class YouRentaController extends AbstractController
     /**
      * Заполнить форму добавления объявления
      */
-    private function fillAddForm($data) {
+    private function fillAddForm($data)
+    {
         $crawler = $this->client->getCrawler();
     }
 }
