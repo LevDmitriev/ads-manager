@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\YouRenta\YouRentaCity;
 use App\Entity\YouRenta\YouRentaCityDistrict;
+use App\Entity\YouRenta\YouRentaGuestCount;
 use App\Entity\YouRenta\YouRentaObjectType;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -13,37 +14,39 @@ use Doctrine\Persistence\ObjectManager;
  */
 class YouRentaFixtures extends Fixture
 {
+    /** @inheritDoc */
     public function load(ObjectManager $manager)
     {
         // Заполнение типов объектов
-        $objectTypeFlat = new YouRentaObjectType();
-        $objectTypeFlat->setName('Квартира');
-        $objectTypeFlat->setValue('1');
-        $manager->persist($objectTypeFlat);
-        $objectTypeCottage = new YouRentaObjectType();
-        $objectTypeCottage->setName('Коттедж');
-        $objectTypeCottage->setValue('2');
-        $manager->persist($objectTypeCottage);
+        for ($i = 1; $i <= 2; $i++) {
+            $objectType = new YouRentaObjectType();
+            $objectType->setName($i === 1 ? 'Квартира' : 'Коттедж');
+            $objectType->setValue('1');
+            $manager->persist($objectType);
+        }
         // Заполнение города
         $city = new YouRentaCity();
         $city->setName('Тольятти');
-        // Заполнение районов города
-        $districtCentral = new YouRentaCityDistrict();
-        $districtCentral->setName('Центальный');
-        $districtCentral->setValue(3);
-        $manager->persist($districtCentral);
-        $city->addDistrict($districtCentral);
-        $disctictKomsomolsky = new YouRentaCityDistrict();
-        $disctictKomsomolsky->setName('Комсомольский');
-        $disctictKomsomolsky->setValue(2);
-        $manager->persist($disctictKomsomolsky);
-        $city->addDistrict($disctictKomsomolsky);
-        $disctictAvtozavodsky = new YouRentaCityDistrict();
-        $disctictAvtozavodsky->setName('Автозаводский');
-        $disctictAvtozavodsky->setValue(1);
-        $city->addDistrict($disctictAvtozavodsky);
-        $manager->persist($disctictAvtozavodsky);
         $manager->persist($city);
+        // Заполнение районов города
+        for ($i = 1 ; $i <= 3; $i++) {
+            $district = new YouRentaCityDistrict();
+            $name = $i === 1 ? 'Автозаводский' : ($i === 2 ? 'Комсомольский' : 'Центальный');
+            $district->setName($name);
+            $district->setValue($i);
+            $city->addDistrict($district);
+            $manager->persist($district);
+        }
+        // Описываем кол-во гостей
+        for ($i = 1; $i <= 11; $i++) {
+            $guestCount = new YouRentaGuestCount();
+            $guestCount->setValue($i);
+            $i <= 10
+                ? $guestCount->setName("$i человек")
+                : $guestCount->setName("> 10 человек");
+            $manager->persist($guestCount);
+        }
+
         $manager->flush();
     }
 }
