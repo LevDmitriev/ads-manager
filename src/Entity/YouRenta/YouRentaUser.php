@@ -97,4 +97,9 @@ class YouRentaUser
 
         return $this;
     }
+
+    public function __toString()
+    {
+        return $this->getLogin();
+    }
 }

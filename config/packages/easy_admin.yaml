@@ -3,8 +3,14 @@ easy_admin:
     entities:
         YouRentaUser:
             class: App\Entity\YouRenta\YouRentaUser
-            label: 'YouRenta users'
+            label: YouRenta users
+            new:
+                fields: ['login', 'password']
+            edit:
+                fields: ['login', 'password']
+            list:
+                fields: ['id', 'login', 'password']
         YouRentaAdvertisement:
             class: App\Entity\YouRenta\YouRentaAdvertisement
-            label: 'YouRenta advertisements'
+            label: YouRenta advertisements
     
