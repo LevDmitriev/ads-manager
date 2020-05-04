@@ -1,5 +1,10 @@
 easy_admin:
+    site_name: 'Advertisement manager'
     entities:
-        # List the entity class name you want to manage
-        - App\Entity\YouRenta\YouRentaUser
-        - App\Entity\YouRenta\YouRentaAdvertisement
+        YouRentaUser:
+            class: App\Entity\YouRenta\YouRentaUser
+            label: 'YouRenta users'
+        YouRentaAdvertisement:
+            class: App\Entity\YouRenta\YouRentaAdvertisement
+            label: 'YouRenta advertisements'
+    

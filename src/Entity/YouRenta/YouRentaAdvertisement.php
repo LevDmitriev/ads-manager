@@ -54,7 +54,7 @@ class YouRentaAdvertisement
     /**
      * @ORM\Column(type="integer")
      */
-    private $Ğ·ĞpriceDay;
+    private $priceDay;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -80,7 +80,7 @@ class YouRentaAdvertisement
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $Ğfloor;
+    private $floor;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -90,7 +90,7 @@ class YouRentaAdvertisement
     /**
      * @ORM\Column(type="float", nullable=true)
      */
-    private $ĞµÑtotalArea;
+    private $totalArea;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -110,12 +110,12 @@ class YouRentaAdvertisement
     /**
      * @ORM\Column(type="boolean")
      */
-    private $ÑÑconditioner;
+    private $conditioner;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $Ñwasher;
+    private $washer;
 
     /**
      * @ORM\Column(type="boolean")
@@ -235,14 +235,14 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getĞ·ĞpriceDay(): ?int
+    public function getpriceDay(): ?int
     {
-        return $this->Ğ·ĞpriceDay;
+        return $this->priceDay;
     }
 
-    public function setĞ·ĞpriceDay(int $Ğ·ĞpriceDay): self
+    public function setpriceDay(int $priceDay): self
     {
-        $this->Ğ·ĞpriceDay = $Ğ·ĞpriceDay;
+        $this->priceDay = $priceDay;
 
         return $this;
     }
@@ -295,14 +295,14 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getĞfloor(): ?int
+    public function getfloor(): ?int
     {
-        return $this->Ğfloor;
+        return $this->floor;
     }
 
-    public function setĞfloor(?int $Ğfloor): self
+    public function setfloor(?int $floor): self
     {
-        $this->Ğfloor = $Ğfloor;
+        $this->floor = $floor;
 
         return $this;
     }
@@ -319,14 +319,14 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getĞµÑtotalArea(): ?float
+    public function gettotalArea(): ?float
     {
-        return $this->ĞµÑtotalArea;
+        return $this->totalArea;
     }
 
-    public function setĞµÑtotalArea(?float $ĞµÑtotalArea): self
+    public function settotalArea(?float $totalArea): self
     {
-        $this->ĞµÑtotalArea = $ĞµÑtotalArea;
+        $this->totalArea = $totalArea;
 
         return $this;
     }
@@ -367,26 +367,26 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getÑÑconditioner(): ?bool
+    public function getconditioner(): ?bool
     {
-        return $this->ÑÑconditioner;
+        return $this->conditioner;
     }
 
-    public function setÑÑconditioner(bool $ÑÑconditioner): self
+    public function setconditioner(bool $conditioner): self
     {
-        $this->ÑÑconditioner = $ÑÑconditioner;
+        $this->conditioner = $conditioner;
 
         return $this;
     }
 
-    public function getÑwasher(): ?bool
+    public function getwasher(): ?bool
     {
-        return $this->Ñwasher;
+        return $this->washer;
     }
 
-    public function setÑwasher(bool $Ñwasher): self
+    public function setwasher(bool $washer): self
     {
-        $this->Ñwasher = $Ñwasher;
+        $this->washer = $washer;
 
         return $this;
     }
