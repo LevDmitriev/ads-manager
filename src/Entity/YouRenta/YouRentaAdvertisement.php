@@ -153,6 +153,11 @@ class YouRentaAdvertisement
      */
     private $user;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaAdvertisementUpdatePeriod", mappedBy="advertisement", cascade={"persist", "remove"})
+     */
+    private $updatePeriod;
+
     public function __construct()
     {
         $this->photos = new ArrayCollection();
@@ -235,12 +240,12 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getpriceDay(): ?int
+    public function getPriceDay(): ?int
     {
         return $this->priceDay;
     }
 
-    public function setpriceDay(int $priceDay): self
+    public function setPriceDay(int $priceDay): self
     {
         $this->priceDay = $priceDay;
 
@@ -295,12 +300,12 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getfloor(): ?int
+    public function getFloor(): ?int
     {
         return $this->floor;
     }
 
-    public function setfloor(?int $floor): self
+    public function setFloor(?int $floor): self
     {
         $this->floor = $floor;
 
@@ -319,12 +324,12 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function gettotalArea(): ?float
+    public function getTotalArea(): ?float
     {
         return $this->totalArea;
     }
 
-    public function settotalArea(?float $totalArea): self
+    public function setTotalArea(?float $totalArea): self
     {
         $this->totalArea = $totalArea;
 
@@ -367,24 +372,24 @@ class YouRentaAdvertisement
         return $this;
     }
 
-    public function getconditioner(): ?bool
+    public function getConditioner(): ?bool
     {
         return $this->conditioner;
     }
 
-    public function setconditioner(bool $conditioner): self
+    public function setConditioner(bool $conditioner): self
     {
         $this->conditioner = $conditioner;
 
         return $this;
     }
 
-    public function getwasher(): ?bool
+    public function getWasher(): ?bool
     {
         return $this->washer;
     }
 
-    public function setwasher(bool $washer): self
+    public function setWasher(bool $washer): self
     {
         $this->washer = $washer;
 
@@ -492,5 +497,37 @@ class YouRentaAdvertisement
         $this->user = $user;
 
         return $this;
+    }
+
+    public function getUpdatePeriod(): ?YouRentaAdvertisementUpdatePeriod
+    {
+        return $this->updatePeriod;
+    }
+
+    public function setUpdatePeriod(?YouRentaAdvertisementUpdatePeriod $updatePeriod): self
+    {
+        $this->updatePeriod = $updatePeriod;
+
+        // set (or unset) the owning side of the relation if necessary
+        $newAdvertisement = null === $updatePeriod ? null : $this;
+        if ($updatePeriod->getAdvertisement() !== $newAdvertisement) {
+            $updatePeriod->setAdvertisement($newAdvertisement);
+        }
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        return implode(
+            ' ',
+            [
+                $this->getCity()->getName(),
+                $this->getDistrict(),
+                'район',
+                $this->getStreet(),
+                $this->getBuildingNumber(),
+            ]
+        );
     }
 }

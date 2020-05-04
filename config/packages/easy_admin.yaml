@@ -6,13 +6,20 @@ easy_admin:
             label: YouRenta users
             form:
                 fields:
-                    - login
-                    - password
+                    - { property: 'login', type: 'email'}
+                    - { property: 'password', type: 'password'}
             list:
                 fields:
                     - id
                     - login
                     - password
+        YouRentaAdvertisementUpdatePeriod:
+            class: App\Entity\YouRenta\YouRentaAdvertisementUpdatePeriod
+            label: YouRenta update periods
+            form:
+                fields:
+                    - { property: 'period', type_options: {with_years: false, with_months: false, with_hours: true, with_minutes: true, with_seconds: true}}
+                    - advertisement
         YouRentaAdvertisement:
             class: App\Entity\YouRenta\YouRentaAdvertisement
             label: YouRenta advertisements
@@ -30,16 +37,16 @@ easy_admin:
                     - street
                     - buildingNumber
                     - roomsNumber
-                    - priceDay
-                    - priceNight
-                    - priceHour
-                    - priceWedding
+                    - { property: 'priceDay', type: 'money', type_options: {currency: RUB}}
+                    - { property: 'priceNight', type: 'money', type_options: {currency: RUB}}
+                    - { property: 'priceHour', type: 'money', type_options: {currency: RUB}}
+                    - { property: 'priceWedding', type: 'money', type_options: {currency: RUB}}
                     - guestCount
                     - floor
                     - floorsCount
                     - totalArea
-                    - firstPhone
-                    - secondPhone
+                    - { property: 'firstPhone', type: 'tel'}
+                    - { property: 'secondPhone', type: 'tel'}
                     - internet
                     - conditioner
                     - washer
