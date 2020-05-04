@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\YouRenta\YouRentaAdvertisement;
 use App\Entity\YouRenta\YouRentaUser;
+use Facebook\WebDriver\WebDriverBy;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Panther\Client;
@@ -43,11 +44,22 @@ class YouRentaController extends AbstractController
      *
      * @return Response
      */
-    private function addAdvertisement(YouRentaAdvertisement $advertisement)
+    public function addAdvertisement(YouRentaAdvertisement $advertisement)
     {
-        $this->authorize($advertisement->getUser());
         $this->client->request('GET', '/add-flat.html');
         return new Response($this->client->getCrawler()->text());
+    }
+
+    /**
+     * Перейти на страницу списка объявлений.
+     * @see \App\Tests\Controller\YouRentaControllerTest::testToAdvertisementsList unit test
+     * @return $this
+     */
+    public function toAdvertisementsList(): self
+    {
+        $this->client->request('GET', '/user-index.html');
+
+        return $this;
     }
 
     /**
