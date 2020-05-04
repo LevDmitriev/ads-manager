@@ -147,6 +147,12 @@ class YouRentaAdvertisement
      */
     private $photos;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaUser", inversedBy="advertisements")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user;
+
     public function __construct()
     {
         $this->photos = new ArrayCollection();
@@ -472,6 +478,18 @@ class YouRentaAdvertisement
                 $photo->setAdvertisement(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?YouRentaUser
+    {
+        return $this->user;
+    }
+
+    public function setUser(?YouRentaUser $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }
