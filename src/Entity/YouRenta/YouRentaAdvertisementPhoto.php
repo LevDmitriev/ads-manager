@@ -3,9 +3,11 @@
 namespace App\Entity\YouRenta;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\YouRenta\YouRentaAdvertisementPhotoRepository")
+ * @Vich\Uploadable()
  */
 class YouRentaAdvertisementPhoto
 {
@@ -19,7 +21,19 @@ class YouRentaAdvertisementPhoto
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $fileName;
+    private $image;
+
+    /**
+     * @Vich\UploadableField(mapping="product_images", fileNameProperty="image")
+     * @var File
+     */
+    private $imageFile;
+
+    /**
+     * @ORM\Column(type="datetime")
+     * @var \DateTime
+     */
+    private $updatedAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaAdvertisement", inversedBy="photos")
@@ -32,18 +46,6 @@ class YouRentaAdvertisementPhoto
         return $this->id;
     }
 
-    public function getFileName(): ?string
-    {
-        return $this->fileName;
-    }
-
-    public function setFileName(string $fileName): self
-    {
-        $this->fileName = $fileName;
-
-        return $this;
-    }
-
     public function getAdvertisement(): ?YouRentaAdvertisement
     {
         return $this->advertisement;
@@ -54,5 +56,32 @@ class YouRentaAdvertisementPhoto
         $this->advertisement = $advertisement;
 
         return $this;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function setImage($image) : void
+    {
+        $this->image = $image;
+    }
+
+    public function getImageFile() : File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(File $imageFile = null) : void
+    {
+        $this->imageFile = $imageFile;
+        // VERY IMPORTANT:
+        // It is required that at least one field changes if you are using Doctrine,
+        // otherwise the event listeners won't be called and the file is lost
+        if ($imageFile) {
+            // if 'updatedAt' is not defined in your entity, use another property
+            $this->updatedAt = new \DateTime('now');
+        }
     }
 }

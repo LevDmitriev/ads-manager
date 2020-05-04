@@ -1,7 +1,7 @@
 vich_uploader:
     db_driver: orm
 
-    #mappings:
-    #    products:
-    #        uri_prefix: /images/products
-    #        upload_destination: '%kernel.project_dir%/public/images/products'
+    mappings:
+        you_renta_advertisement_images:
+            uri_prefix: '%app.path.yourenta_advertisement_images%'
+            upload_destination: '%kernel.project_dir%/public%app.path.yourenta_advertisement_images%'
