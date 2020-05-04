@@ -1,13 +1,13 @@
 easy_admin:
-    site_name: 'Advertisement manager'
+    site_name: Advertisement manager
     entities:
         YouRentaUser:
             class: App\Entity\YouRenta\YouRentaUser
             label: YouRenta users
             form:
                 fields:
-                    - { property: 'login', type: 'email'}
-                    - { property: 'password', type: 'password'}
+                    - { property: login, type: email}
+                    - { property: password, type: password}
             list:
                 fields:
                     - id
@@ -18,7 +18,7 @@ easy_admin:
             label: YouRenta update periods
             form:
                 fields:
-                    - { property: 'period', type_options: {with_years: false, with_months: false, with_hours: true, with_minutes: true, with_seconds: true}}
+                    - { property: period, type_options: {with_years: false, with_months: false, with_hours: true, with_minutes: true, with_seconds: true}}
                     - advertisement
         YouRentaAdvertisement:
             class: App\Entity\YouRenta\YouRentaAdvertisement
@@ -29,6 +29,7 @@ easy_admin:
                     - street
                     - buildingNumber
                     - roomsNumber
+                    - user
             form:
                 fields:
                     - objectType
@@ -36,17 +37,17 @@ easy_admin:
                     - district
                     - street
                     - buildingNumber
-                    - roomsNumber
-                    - { property: 'priceDay', type: 'money', type_options: {currency: RUB}}
-                    - { property: 'priceNight', type: 'money', type_options: {currency: RUB}}
-                    - { property: 'priceHour', type: 'money', type_options: {currency: RUB}}
-                    - { property: 'priceWedding', type: 'money', type_options: {currency: RUB}}
+                    - { property: roomsNumber, type: choice, type_options: {choices: {1: 1, 2: 2, 3: 3, 4: 4}}}
+                    - { property: priceDay, type: money, type_options: {currency: RUB}}
+                    - { property: priceNight, type: money, type_options: {currency: RUB}}
+                    - { property: priceHour, type: money, type_options: {currency: RUB}}
+                    - { property: priceWedding, type: money, type_options: {currency: RUB}}
                     - guestCount
                     - floor
                     - floorsCount
                     - totalArea
-                    - { property: 'firstPhone', type: 'tel'}
-                    - { property: 'secondPhone', type: 'tel'}
+                    - { property: firstPhone, type: tel}
+                    - { property: secondPhone, type: tel}
                     - internet
                     - conditioner
                     - washer
@@ -56,6 +57,6 @@ easy_admin:
                     - rentConditions
                     - rentConditionsWedding
                     - youTube
-                    - { property: 'photos', type: 'collection', type_options: {entry_type: App\Form\YouRentaAdvertisementPhotoType, by_reference: false}}
+                    - { property: photos, type: collection, type_options: {entry_type: App\Form\YouRentaAdvertisementPhotoType, by_reference: false}}
                     - user
     

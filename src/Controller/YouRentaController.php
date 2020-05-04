@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\YouRenta\YouRentaAdvertisement;
+use App\Entity\YouRenta\YouRentaUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Panther\Client;
@@ -19,39 +21,49 @@ class YouRentaController extends AbstractController
     }
 
     /**
-     * @Route("/you-renta", name="you_renta")
+     * @Route("/you-renta/update/{id}", name="you_renta_update")
+     * @param YouRentaAdvertisement $advertisement Объявление, которое нужно обновить
      */
-    public function addAdvertisements()
+    public function updateAdvertisement(YouRentaAdvertisement $advertisement)
     {
-        $this->authorize('gfdh6@mail.ru', 444444);
+
+    }
+
+    /**
+     * Получить клиента для работы с текущей страницей
+     * @return Client
+     */
+    public function getClient() : Client
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param YouRentaAdvertisement $advertisement Подать объявление
+     *
+     * @return Response
+     */
+    private function addAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->authorize($advertisement->getUser());
         $this->client->request('GET', '/add-flat.html');
         return new Response($this->client->getCrawler()->text());
     }
 
     /**
      * Авторизоваться
-     * @param string $login Логин
-     * @param string $password Пароль
+     * @param YouRentaUser $user Пользователь, под которым необходимо авторизоваться
      *
-     * @see \App\Tests\YouRentaControllerTest::testAuthorize unit test
-     *
-     * @throws \Facebook\WebDriver\Exception\NoSuchElementException
-     * @throws \Facebook\WebDriver\Exception\TimeoutException
+     * @see \App\Tests\Controller\YouRentaControllerTest::testAuthorize unit test
      */
-    private function authorize(string $login, string $password)
+    public function authorize(YouRentaUser $user)
     {
         $this->client->request('GET', '/login.html');
         $crawler = $this->client->getCrawler();
-        $crawler->filter('#login-form')->form(['enter_email' => $login, 'enter_pass' => $password]);
+        $crawler->filter('#login-form')->form(['enter_email' => $user->getLogin(), 'enter_pass' => $user->getPassword()]);
         $crawler->filter('#uniform-enter')->first()->click();
         $this->client->waitFor('#cabinetcontent');
-    }
 
-    /**
-     * Заполнить форму добавления объявления
-     */
-    private function fillAddForm($data)
-    {
-        $crawler = $this->client->getCrawler();
+        return $this;
     }
 }
