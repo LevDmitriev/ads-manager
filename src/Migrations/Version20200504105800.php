@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace DoctrineMigrations;
 
 use App\Entity\YouRenta\YouRentaCity;
-use App\Entity\YouRenta\YouRentaObjectType;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
@@ -14,7 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 /**
  * Миграция добавления типов объектов
  */
-final class Version20200504145800 extends AbstractMigration implements ContainerAwareInterface
+final class Version20200504105800 extends AbstractMigration implements ContainerAwareInterface
 {
    use ContainerAwareTrait;
 
