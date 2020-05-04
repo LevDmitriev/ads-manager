@@ -4,13 +4,51 @@ easy_admin:
         YouRentaUser:
             class: App\Entity\YouRenta\YouRentaUser
             label: YouRenta users
-            new:
-                fields: ['login', 'password']
-            edit:
-                fields: ['login', 'password']
+            form:
+                fields:
+                    - login
+                    - password
             list:
-                fields: ['id', 'login', 'password']
+                fields:
+                    - id
+                    - login
+                    - password
         YouRentaAdvertisement:
             class: App\Entity\YouRenta\YouRentaAdvertisement
             label: YouRenta advertisements
+            list:
+                fields:
+                    - city
+                    - street
+                    - buildingNumber
+                    - roomsNumber
+            form:
+                fields:
+                    - objectType
+                    - city
+                    - district
+                    - street
+                    - buildingNumber
+                    - roomsNumber
+                    - priceDay
+                    - priceNight
+                    - priceHour
+                    - priceWedding
+                    - guestCount
+                    - floor
+                    - floorsCount
+                    - totalArea
+                    - firstPhone
+                    - secondPhone
+                    - internet
+                    - conditioner
+                    - washer
+                    - parking
+                    - description
+                    - rentConditions
+                    - rentConditions
+                    - rentConditionsWedding
+                    - youTube
+                    - { property: 'photos', type: 'collection', type_options: {entry_type: App\Form\YouRentaAdvertisementPhotoType, by_reference: false}}
+                    - user
     

@@ -143,7 +143,7 @@ class YouRentaAdvertisement
     private $youTube;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\YouRenta\YouRentaAdvertisementPhoto", mappedBy="advertisement", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\YouRenta\YouRentaAdvertisementPhoto", mappedBy="advertisement", orphanRemoval=true, cascade={"persist"})
      */
     private $photos;
 

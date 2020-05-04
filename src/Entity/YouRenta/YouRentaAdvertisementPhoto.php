@@ -19,27 +19,39 @@ class YouRentaAdvertisementPhoto
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=false)
      */
     private $image;
 
     /**
-     * @Vich\UploadableField(mapping="product_images", fileNameProperty="image")
+     * @Vich\UploadableField(mapping="yourenta_advertisement_images", fileNameProperty="image")
      * @var File
      */
     private $imageFile;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=false)
      * @var \DateTime
      */
     private $updatedAt;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=false)
+     * @var \DateTime
+     */
+    private $createdAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaAdvertisement", inversedBy="photos")
      * @ORM\JoinColumn(nullable=false)
      */
     private $advertisement;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -68,20 +80,26 @@ class YouRentaAdvertisementPhoto
         $this->image = $image;
     }
 
-    public function getImageFile() : File
+    public function getImageFile() : ?File
     {
         return $this->imageFile;
     }
 
-    public function setImageFile(File $imageFile = null) : void
+    public function setImageFile(?File $imageFile) : void
     {
         $this->imageFile = $imageFile;
-        // VERY IMPORTANT:
-        // It is required that at least one field changes if you are using Doctrine,
-        // otherwise the event listeners won't be called and the file is lost
         if ($imageFile) {
-            // if 'updatedAt' is not defined in your entity, use another property
             $this->updatedAt = new \DateTime('now');
         }
+    }
+
+    public function getCreatedAt() : \DateTime
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTime $createdAt) : void
+    {
+        $this->createdAt = $createdAt;
     }
 }
