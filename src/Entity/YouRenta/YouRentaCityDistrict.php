@@ -26,6 +26,12 @@ class YouRentaCityDistrict
      */
     private $value;
 
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaCity", inversedBy="districts", cascade={"persist", "remove"})
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $city;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -51,6 +57,18 @@ class YouRentaCityDistrict
     public function setValue(string $value): self
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getCity(): ?YouRentaCity
+    {
+        return $this->city;
+    }
+
+    public function setCity(YouRentaCity $city): self
+    {
+        $this->city = $city;
 
         return $this;
     }
