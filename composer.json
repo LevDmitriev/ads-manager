@@ -20,6 +20,7 @@
         "vich/uploader-bundle": "^1.13"
     },
     "require-dev": {
+        "fzaninotto/faker": "^1.9",
         "symfony/test-pack": "^1.0"
     },
     "config": {
