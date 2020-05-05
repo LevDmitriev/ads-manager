@@ -20,6 +20,7 @@ class YouRentaAdvertisementPhoto
 
     /**
      * @ORM\Column(type="string", length=255, nullable=false)
+     * @var string
      */
     private $image;
 
@@ -70,12 +71,12 @@ class YouRentaAdvertisementPhoto
         return $this;
     }
 
-    public function getImage()
+    public function getImage(): string
     {
         return $this->image;
     }
 
-    public function setImage($image) : void
+    public function setImage(string $image) : void
     {
         $this->image = $image;
     }
