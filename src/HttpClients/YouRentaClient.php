@@ -4,7 +4,9 @@ namespace App\HttpClients;
 
 use App\Entity\YouRenta\YouRentaAdvertisement;
 use App\Entity\YouRenta\YouRentaUser;
+use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use PharIo\Manifest\InvalidUrlException;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
@@ -52,7 +54,13 @@ class YouRentaClient
 
     /**
      * Добавить объявление
+     *
      * @param YouRentaAdvertisement $advertisement Объявление, которое следует добавить
+     *
+     * @return YouRentaClient
+     * @throws \Facebook\WebDriver\Exception\NoSuchElementException
+     * @throws \Facebook\WebDriver\Exception\TimeoutException
+     * @see \App\Tests\HttpClients\YouRentaClientTest::testAddAndDeleteAdvertisement unit test
      */
     public function addAdvertisement(YouRentaAdvertisement $advertisement): self
     {
@@ -73,46 +81,56 @@ class YouRentaClient
                              'etag' => $advertisement->getFloor(),
                              'etag_all' => $advertisement->getFloorsCount(),
                              'phone_1' => $advertisement->getFirstPhone(),
-                             'phone2' => $advertisement->getSecondPhone(),
+                             'phone_2' => $advertisement->getSecondPhone(),
                          ]);
         $crawler->findElement(WebDriverBy::cssSelector('a[href="#tabs-2"]'))->click();
-        $form->setValues([
-            'inet' => $advertisement->getInternet(),
-            'sm' => $advertisement->getWasher(),
-            'parkovka_f' => $advertisement->getParking(),
-            'conditioner_f' => $advertisement->getConditioner(),
-            'dop' => $advertisement->getDescription(),
-            'uslov' => $advertisement->getRentConditions(),
-            'uslov_svadba' => $advertisement->getRentConditionsWedding(),
-                         ]);
+        $form->get('inet')->setValue($advertisement->getInternet());
+        $form->get('sm')->setValue($advertisement->getWasher());
+        $form->get('parkovka_f')->setValue($advertisement->getParking());
+        $form->get('conditioner_f')->setValue($advertisement->getConditioner());
+        $form->get('dop')->setValue($advertisement->getDescription());
+        $form->get('uslov')->setValue($advertisement->getRentConditions());
+        $form->get('uslov_svadba')->setValue($advertisement->getRentConditionsWedding());
         $crawler->findElement(WebDriverBy::cssSelector('a[href="#tabs-3"]'))->click();
         foreach ($advertisement->getPhotos() as $key => $photo) {
-            $form->get('img' . $key + 1)->upload($photo->getImage());
+            $form->get('img' . ($key + 1))->upload($photo->getImage());
         }
-        //$this->client->submit($form);
-        $this->client->waitFor('#id');
+        $this->client->submit($form);
+        $this->getClient()->wait()->until(
+            WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
+        );
+        $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
 
         return $this;
     }
 
     /**
      * Удалить объявление с сайта
+     *
      * @param YouRentaAdvertisement $advertisement Объявление
+     * @see \App\Tests\HttpClients\YouRentaClientTest::testAddAndDeleteAdvertisement unit test
+     *
+     * @return YouRentaClient
      */
-    public function deleteAdvertisement(YouRentaAdvertisement $advertisement)
+    public function deleteAdvertisement(YouRentaAdvertisement $advertisement): self
     {
         if (strpos($this->getClient()->getCurrentURL(), self::URL_ADVERTISEMENT_LIST) < 0) {
             throw new InvalidUrlException('current url must contain' . self::URL_ADVERTISEMENT_LIST);
         }
-        $crawler = $this->getClient()->getCrawler();
         $text = Crawler::xpathLiteral(implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()]));
         /** @var Crawler Парсер блока редактирования бъявления */
-        $crawlerManagementBlock = $crawler->filterXPath(
-            "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
-        );
-        $crawlerManagementBlock->first()->click();
+        $crawler = $this
+            ->getClient()
+            ->getCrawler()
+            ->filterXPath(
+                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
+            )
+        ;
+        $crawler->first()->click();
         $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
-        $this->getClient()->waitFor('#fancybox-close');
+        $this->getClient()->wait()->until(
+            WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
+        );
         $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
 
         return $this;

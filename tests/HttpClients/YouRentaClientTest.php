@@ -13,6 +13,8 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 use Faker\Factory;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Panther\DomCrawler\Crawler;
 
 /**
  * @coversDefaultClass \App\HttpClients\YouRentaClient
@@ -50,31 +52,35 @@ class YouRentaClientTest extends TestCase
         return [[$user]];
     }
 
-    /**
-     * @covers ::addAdvertisement
-     * @param YouRentaAdvertisement $advertisement
-     */
-    public function testAddAdvertisement(YouRentaAdvertisement $advertisement)
-    {
-        $crawler = $this->client->addAdvertisement($advertisement)->getClient()->getCrawler();
-        /** @var WebDriverElement $element */
-        $element = $crawler->findElement(
-            WebDriverBy::partialLinkText(
-                implode(',', [$advertisement->getStreet(), $advertisement->getBuildingNumber()])
-            )
-        );
-
-        $this->assertInstanceOf(WebDriverElement::class,  $element);
-    }
 
     /**
      * @dataProvider advertisementDataProvider
      * @covers ::deleteAdvertisement
+     * @covers ::addAdvertisement
      * @param YouRentaAdvertisement $advertisement
      */
-    public function testDeleteAdvertisement(YouRentaAdvertisement $advertisement)
+    public function testAddAndDeleteAdvertisement(YouRentaAdvertisement $advertisement)
     {
-        $this->client->deleteAdvertisement($advertisement)->getClient()->getCrawler();
+        $text = Crawler::xpathLiteral(implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()]));
+        $crawlerAfterAdd = $this->client
+            ->authorize($advertisement->getUser())
+            ->addAdvertisement($advertisement)
+            ->getClient()
+            ->getCrawler()
+            ->filterXPath(
+                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
+            )
+        ;
+        $this->assertCount(1, $crawlerAfterAdd);
+        $crawlerAfterDelete = $this->client
+            ->deleteAdvertisement($advertisement)
+            ->getClient()
+            ->getCrawler()
+            ->filterXPath(
+                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
+            )
+            ;
+        $this->assertCount(0, $crawlerAfterDelete);
     }
 
     /**
@@ -116,10 +122,19 @@ class YouRentaClientTest extends TestCase
         $guestCount = $this->getMockBuilder(YouRentaGuestCount::class)->setMethods(['getValue'])->getMock();
         $guestCount->method('getValue')->willReturn($faker->numberBetween(1, 11));
         $advertisement->setGuestCount($guestCount);
-
+        /** @var YouRentaAdvertisementPhoto $photo */
         $photo = $this->getMockBuilder(YouRentaAdvertisementPhoto::class)->setMethods(['getImage'])->getMock();
-        $photo->method('getImage')->willReturn($faker->imageUrl());
+        // Загружаем изображение в временную папку
+        $tmp = sys_get_temp_dir() . '/' . __METHOD__ . '.jpg';
+        if (!file_exists($tmp)) {
+            copy($faker->imageUrl(), $tmp);
+        }
+        $photo->method('getImage')->willReturn($tmp);
         $advertisement->addPhoto($photo);
+        $advertisement->addPhoto(clone $photo);
+        $advertisement->addPhoto(clone $photo);
+        $advertisement->addPhoto(clone $photo);
+        $advertisement->addPhoto(clone $photo);
 
         $objectType = $this->getMockBuilder(YouRentaObjectType::class)->setMethods(['getValue'])->getMock();
         $objectType->method('getValue')->willReturn($faker->numberBetween(1, 2));
