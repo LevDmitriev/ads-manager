@@ -25,7 +25,24 @@ class YouRentaClient
     private $client;
     public function __construct()
     {
+        // Все настройки клиента через окружение
         $this->client = Client::createChromeClient(null, null, [],'https://yourenta.ru');
+    }
+
+    /**
+     * Получить XPath для поиска объявления в списке объявлений
+     * @param YouRentaAdvertisement $advertisement
+     *
+     * @return string
+     */
+    public function getXpathAdvertisementInList(YouRentaAdvertisement $advertisement): string
+    {
+        $text = Crawler::xpathLiteral(
+            implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()])
+        );
+
+        return  "descendant::a[contains(string(.), $text)]/" .
+                "./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]";
     }
 
     /**
@@ -117,21 +134,22 @@ class YouRentaClient
         if (strpos($this->getClient()->getCurrentURL(), self::URL_ADVERTISEMENT_LIST) < 0) {
             throw new InvalidUrlException('current url must contain' . self::URL_ADVERTISEMENT_LIST);
         }
-        $text = Crawler::xpathLiteral(implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()]));
         /** @var Crawler Парсер блока редактирования бъявления */
         $crawler = $this
             ->getClient()
             ->getCrawler()
-            ->filterXPath(
-                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
-            )
+            ->filterXPath($this->getXpathAdvertisementInList($advertisement))
         ;
         $crawler->first()->click();
+        $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
         $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
         $this->getClient()->wait()->until(
             WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
         );
         $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
+        $this->getClient()->wait(
+            WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-close'))
+        );
 
         return $this;
     }

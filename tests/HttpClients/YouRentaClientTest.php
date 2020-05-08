@@ -9,6 +9,7 @@ use App\Entity\YouRenta\YouRentaGuestCount;
 use App\Entity\YouRenta\YouRentaObjectType;
 use App\Entity\YouRenta\YouRentaUser;
 use App\HttpClients\YouRentaClient;
+use Doctrine\Common\Collections\ArrayCollection;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 use Faker\Factory;
@@ -25,6 +26,12 @@ class YouRentaClientTest extends TestCase
     public function setUp(): void
     {
         $this->client = new YouRentaClient();
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $this->client->getClient()->quit();
     }
 
     /**
@@ -81,6 +88,38 @@ class YouRentaClientTest extends TestCase
             )
             ;
         $this->assertCount(0, $crawlerAfterDelete);
+    }
+
+    /**
+     * Тест на добавление и удаление множества объявлений
+     * @param ArrayCollection<YouRentaAdvertisement>  $advertisements
+     * @dataProvider advertisementCollectionDataProvider
+     * @throws \Facebook\WebDriver\Exception\NoSuchElementException
+     * @throws \Facebook\WebDriver\Exception\TimeoutException
+     */
+    public function testAddAndDeleteMultipleAdvertisements(ArrayCollection $advertisements)
+    {
+        $this->client->authorize($advertisements->first()->getUser());
+        /** @var YouRentaAdvertisement $advertisement */
+        foreach ($advertisements as $advertisement) {
+            $crawlerAfterAdd = $this->client
+                ->addAdvertisement($advertisement)
+                ->getClient()
+                ->getCrawler()
+                ->filterXPath($this->client->getXpathAdvertisementInList($advertisement))
+            ;
+            $this->assertCount(1, $crawlerAfterAdd);
+        }
+
+        foreach ($advertisements as $advertisement) {
+            $crawlerAfterAdd = $this->client
+                ->deleteAdvertisement($advertisement)
+                ->getClient()
+                ->getCrawler()
+                ->filterXPath($this->client->getXpathAdvertisementInList($advertisement))
+            ;
+            $this->assertCount(0, $crawlerAfterAdd);
+        }
     }
 
     /**
@@ -141,5 +180,18 @@ class YouRentaClientTest extends TestCase
         $advertisement->setObjectType($objectType);
 
         return [[$advertisement]];
+    }
+
+    /**
+     * Провайдер коллекции объявлений
+     */
+    public function advertisementCollectionDataProvider()
+    {
+        $collection = new ArrayCollection();
+        for ($i = 0; $i < 3; $i++) {
+            $collection->add($this->advertisementDataProvider()[0][0]);
+        }
+
+        return [[$collection]];
     }
 }
