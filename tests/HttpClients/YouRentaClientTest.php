@@ -13,19 +13,33 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 use Faker\Factory;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Panther\DomCrawler\Crawler;
+use Vich\UploaderBundle\Mapping\PropertyMappingFactory;
+use Vich\UploaderBundle\Storage\FileSystemStorage;
+use Vich\UploaderBundle\Storage\StorageInterface;
 
 /**
  * @coversDefaultClass \App\HttpClients\YouRentaClient
  */
-class YouRentaClientTest extends TestCase
+class YouRentaClientTest extends KernelTestCase
 {
+
     private $client;
+
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        if (!static::$booted) {
+            static::bootKernel();
+        }
+    }
+
     public function setUp(): void
     {
-        $this->client = new YouRentaClient();
+        parent::setUp();
+        $this->client = self::$container->get(YouRentaClient::class);
     }
 
     public function tearDown(): void
@@ -127,6 +141,9 @@ class YouRentaClientTest extends TestCase
      */
     public function advertisementDataProvider()
     {
+        if (!static::$booted) {
+            static::bootKernel();
+        }
         $user = $this->userDataProvider()[0][0];
         $faker = Factory::create();
         $floor = $faker->randomNumber(1);
@@ -162,13 +179,19 @@ class YouRentaClientTest extends TestCase
         $guestCount->method('getValue')->willReturn($faker->numberBetween(1, 11));
         $advertisement->setGuestCount($guestCount);
         /** @var YouRentaAdvertisementPhoto $photo */
-        $photo = $this->getMockBuilder(YouRentaAdvertisementPhoto::class)->setMethods(['getImage'])->getMock();
-        // Загружаем изображение в временную папку
-        $tmp = sys_get_temp_dir() . '/' . __METHOD__ . '.jpg';
-        if (!file_exists($tmp)) {
-            copy($faker->imageUrl(), $tmp);
+        $photo = new YouRentaAdvertisementPhoto();
+        $photo->setImage( __METHOD__ . '.jpg');
+        /** @var PropertyMappingFactory */
+        $mappingFactory = self::$container->get(PropertyMappingFactory::class);
+        $mapping = $mappingFactory->fromField($photo, 'imageFile');
+        /** @var FileSystemStorage $storage */
+        $storage = self::$container->get(StorageInterface::class);
+        $photo->setImageFile(new File($storage->resolvePath($photo, 'imageFile') . '/' . $photo->getImage(), false));
+
+        // Загружаем изображение
+        if (!file_exists($photo->getImageFile()->getPath())) {
+            copy($faker->imageUrl(), $photo->getImageFile()->getPath());
         }
-        $photo->method('getImage')->willReturn($tmp);
         $advertisement->addPhoto($photo);
         $advertisement->addPhoto(clone $photo);
         $advertisement->addPhoto(clone $photo);

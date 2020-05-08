@@ -4,15 +4,13 @@ namespace App\HttpClients;
 
 use App\Entity\YouRenta\YouRentaAdvertisement;
 use App\Entity\YouRenta\YouRentaUser;
-use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use PharIo\Manifest\InvalidUrlException;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
 use Symfony\Component\Panther\DomCrawler\Form;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Vich\UploaderBundle\Storage\StorageInterface;
 
 /**
  * Клиент для работы с сайтом YouRenta
@@ -23,10 +21,16 @@ class YouRentaClient
     public const URL_ADVERTISEMENT_LIST = 'user-index.html';
 
     private $client;
-    public function __construct()
+    /**
+     * @var StorageInterface
+     */
+    private $storage;
+
+    public function __construct(StorageInterface $storage)
     {
         // Все настройки клиента через окружение
         $this->client = Client::createChromeClient(null, null, [],'https://yourenta.ru');
+        $this->storage = $storage;
     }
 
     /**
@@ -110,7 +114,7 @@ class YouRentaClient
         $form->get('uslov_svadba')->setValue($advertisement->getRentConditionsWedding());
         $crawler->findElement(WebDriverBy::cssSelector('a[href="#tabs-3"]'))->click();
         foreach ($advertisement->getPhotos() as $key => $photo) {
-            $form->get('img' . ($key + 1))->upload($photo->getImage());
+            $form->get('img' . ($key + 1))->upload($this->storage->resolvePath($photo));
         }
         $this->client->submit($form);
         $this->getClient()->wait()->until(
@@ -140,16 +144,18 @@ class YouRentaClient
             ->getCrawler()
             ->filterXPath($this->getXpathAdvertisementInList($advertisement))
         ;
-        $crawler->first()->click();
-        $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
-        $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
-        $this->getClient()->wait()->until(
-            WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
-        );
-        $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
-        $this->getClient()->wait(
-            WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-close'))
-        );
+        if ($crawler->count()) {
+            $crawler->first()->click();
+            $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
+            $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
+            $this->getClient()->wait()->until(
+                WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
+            );
+            $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
+            $this->getClient()->wait(
+                WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-close'))
+            );
+        }
 
         return $this;
     }
