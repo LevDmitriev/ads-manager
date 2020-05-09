@@ -153,11 +153,6 @@ class YouRentaAdvertisement
      */
     private $user;
 
-    /**
-     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaAdvertisementUpdatePeriod", mappedBy="advertisement", cascade={"persist", "remove"})
-     */
-    private $updatePeriod;
-
     public function __construct()
     {
         $this->photos = new ArrayCollection();
@@ -495,24 +490,6 @@ class YouRentaAdvertisement
     public function setUser(?YouRentaUser $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getUpdatePeriod(): ?YouRentaAdvertisementUpdatePeriod
-    {
-        return $this->updatePeriod;
-    }
-
-    public function setUpdatePeriod(?YouRentaAdvertisementUpdatePeriod $updatePeriod): self
-    {
-        $this->updatePeriod = $updatePeriod;
-
-        // set (or unset) the owning side of the relation if necessary
-        $newAdvertisement = null === $updatePeriod ? null : $this;
-        if ($updatePeriod->getAdvertisement() !== $newAdvertisement) {
-            $updatePeriod->setAdvertisement($newAdvertisement);
-        }
 
         return $this;
     }

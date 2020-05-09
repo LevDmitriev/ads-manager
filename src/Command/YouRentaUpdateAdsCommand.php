@@ -26,23 +26,17 @@ class YouRentaUpdateAdsCommand extends Command
      */
     private $advertisementRepository;
     /**
-     * @var YouRentaAdvertisementUpdatePeriodRepository
-     */
-    private $periodRepository;
-    /**
      * @var YouRentaClient
      */
     private $client;
 
     public function __construct(
         YouRentaAdvertisementRepository $advertisementRepository,
-        YouRentaAdvertisementUpdatePeriodRepository $periodRepository,
         YouRentaClient $client
     )
     {
         parent::__construct();
         $this->advertisementRepository = $advertisementRepository;
-        $this->periodRepository = $periodRepository;
         $this->client = $client;
     }
     protected static $defaultName = 'you-renta:update:ads';
