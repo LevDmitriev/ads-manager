@@ -2,6 +2,7 @@
 
 namespace App\Entity\YouRenta;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -32,6 +33,15 @@ class YouRentaCityDistrict
      */
     private $city;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\YouRenta\YouRentaAdvertisement", mappedBy="district")
+     */
+    private $advertisements;
+
+    public function __construct()
+    {
+        $this->advertisements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -77,5 +87,15 @@ class YouRentaCityDistrict
     public function __toString()
     {
         return $this->getName();
+    }
+
+    public function addAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->add($advertisement);
+    }
+
+    public function removeAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->removeElement($advertisement);
     }
 }

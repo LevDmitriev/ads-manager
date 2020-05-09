@@ -19,19 +19,19 @@ class YouRentaAdvertisement
     private $id;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaObjectType", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaObjectType", inversedBy="advertisements")
      * @ORM\JoinColumn(nullable=false)
      */
     private $objectType;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaCity", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaCity", inversedBy="advertisements")
      * @ORM\JoinColumn(nullable=false)
      */
     private $city;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaCityDistrict", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaCityDistrict", inversedBy="advertisements")
      * @ORM\JoinColumn(nullable=false)
      */
     private $district;
@@ -72,7 +72,7 @@ class YouRentaAdvertisement
     private $priceWedding;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\YouRenta\YouRentaGuestCount", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="App\Entity\YouRenta\YouRentaGuestCount", inversedBy="advertisements")
      * @ORM\JoinColumn(nullable=false)
      */
     private $guestCount;

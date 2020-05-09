@@ -2,6 +2,7 @@
 
 namespace App\Entity\YouRenta;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -25,6 +26,15 @@ class YouRentaGuestCount
      * @ORM\Column(type="string", length=255)
      */
     private $value;
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\YouRenta\YouRentaAdvertisement", mappedBy="guestCount")
+     */
+    private $advertisements;
+
+    public function __construct()
+    {
+        $this->advertisements = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -58,5 +68,15 @@ class YouRentaGuestCount
     public function __toString()
     {
         return $this->getName();
+    }
+
+    public function addAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->add($advertisement);
+    }
+
+    public function removeAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->removeElement($advertisement);
     }
 }

@@ -65,8 +65,9 @@ class YouRentaClient
      */
     public function authorize(YouRentaUser $user): self
     {
-        $crawler = $this->client->get('/login.html')->getCrawler();
+        $crawler = $this->getClient()->get('/login.html')->getCrawler();
         $crawler->filter('#login-form')->form(['enter_email' => $user->getLogin(), 'enter_pass' => $user->getPassword()]);
+        $this->getClient()->findElement(WebDriverBy::id('uniform-enter'));
         $crawler->filter('#uniform-enter')->first()->click();
         $this->client->waitFor('#cabinetcontent');
 
@@ -138,14 +139,17 @@ class YouRentaClient
         if (strpos($this->getClient()->getCurrentURL(), self::URL_ADVERTISEMENT_LIST) < 0) {
             throw new InvalidUrlException('current url must contain' . self::URL_ADVERTISEMENT_LIST);
         }
-        /** @var Crawler Парсер блока редактирования бъявления */
+        /** @var Crawler Парсер блока редактирования объявления */
         $crawler = $this
             ->getClient()
             ->getCrawler()
             ->filterXPath($this->getXpathAdvertisementInList($advertisement))
         ;
         if ($crawler->count()) {
-            $crawler->first()->click();
+            $this->getClient()
+                ->findElement(WebDriverBy::xpath($this->getXpathAdvertisementInList($advertisement)))
+                ->click()
+            ;
             $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
             $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
             $this->getClient()->wait()->until(

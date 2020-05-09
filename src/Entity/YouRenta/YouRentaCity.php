@@ -28,9 +28,15 @@ class YouRentaCity
      */
     private $districts;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\YouRenta\YouRentaAdvertisement", mappedBy="city")
+     */
+    private $advertisements;
+
     public function __construct()
     {
         $this->districts = new ArrayCollection();
+        $this->advertisements = new ArrayCollection();
     }
 
 
@@ -85,5 +91,15 @@ class YouRentaCity
     public function __toString()
     {
         return $this->getName();
+    }
+
+    public function addAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->add($advertisement);
+    }
+
+    public function removeAdvertisement(YouRentaAdvertisement $advertisement)
+    {
+        $this->advertisements->removeElement($advertisement);
     }
 }

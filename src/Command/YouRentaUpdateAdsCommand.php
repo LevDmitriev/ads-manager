@@ -53,20 +53,20 @@ class YouRentaUpdateAdsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         /** @var int $period Кол-во секунд ожидания */
         $period = (int) $input->getOption('period');
-        /** @var ArrayCollection|YouRentaAdvertisement[] $advertisements Все объявления */
-        $advertisements = new ArrayCollection();
-        array_map(function ($advertisement) use ($advertisements) {
-            $advertisements->add($advertisement);
-        }, $this->advertisementRepository->findAll());
-        /** @var ArrayCollection|YouRentaUser[] $users Пользователи, которым пренадлежат объявления */
-        $users = new ArrayCollection();
-        $advertisements->map(function($advertisement) use ($users) {
-            /** @var YouRentaAdvertisement $advertisement */
-            if (!$users->contains($advertisement->getUser())) {
-                $users->add($advertisement->getUser());
-            }
-        });
         while (true) {
+            /** @var ArrayCollection|YouRentaAdvertisement[] $advertisements Все объявления */
+            $advertisements = new ArrayCollection();
+            array_map(function ($advertisement) use ($advertisements) {
+                $advertisements->add($advertisement);
+            }, $this->advertisementRepository->findAll());
+            /** @var ArrayCollection|YouRentaUser[] $users Пользователи, которым пренадлежат объявления */
+            $users = new ArrayCollection();
+            $advertisements->map(function($advertisement) use ($users) {
+                /** @var YouRentaAdvertisement $advertisement */
+                if (!$users->contains($advertisement->getUser())) {
+                    $users->add($advertisement->getUser());
+                }
+            });
             foreach ($users as $user) {
                 $this->client->authorize($user);
                 /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
@@ -80,7 +80,16 @@ class YouRentaUpdateAdsCommand extends Command
                     $this->client->deleteAdvertisement($advertisement);
                     $this->client->addAdvertisement($advertisement);
                 }
-                $io->writeln('Объявления пользователя ' . $user->getLogin() . ' обновлены');
+
+                $io->writeln(implode(' ',
+                                      [
+                                          'Объявления',
+                                          'пользователя',
+                                          $user->getLogin(),
+                                          'обновлены',
+                                          (new \DateTime())->format('Y-m-d H:i:s'),
+                                      ]
+                              ));
             }
             $io->writeln("Ждём $period секунд");
             sleep($period);
