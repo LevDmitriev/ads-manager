@@ -20,7 +20,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class YouRentaUpdateAdsCommand extends Command
 {
-
     /**
      * @var YouRentaAdvertisementRepository
      */
@@ -39,8 +38,9 @@ class YouRentaUpdateAdsCommand extends Command
         $this->advertisementRepository = $advertisementRepository;
         $this->client = $client;
     }
-    protected static $defaultName = 'you-renta:update:ads';
+    protected static $defaultName = 'yourenta:update:ads';
 
+    /** @inheritDoc */
     protected function configure()
     {
         $this->setDescription('Начать обновление объявлений YouRenta');

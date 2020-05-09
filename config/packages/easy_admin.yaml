@@ -13,13 +13,6 @@ easy_admin:
                     - id
                     - login
                     - password
-        YouRentaAdvertisementUpdatePeriod:
-            class: App\Entity\YouRenta\YouRentaAdvertisementUpdatePeriod
-            label: YouRenta update periods
-            form:
-                fields:
-                    - { property: period, type_options: {with_years: false, with_months: false, with_hours: true, with_minutes: true, with_seconds: true}}
-                    - advertisement
         YouRentaAdvertisement:
             class: App\Entity\YouRenta\YouRentaAdvertisement
             label: YouRenta advertisements
