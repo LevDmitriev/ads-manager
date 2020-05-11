@@ -129,6 +129,9 @@ class YouRentaClient
             WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
         );
         $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
+        $this->getClient()->wait(
+            WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-overlay'))
+        );
 
         return $this;
     }
@@ -169,7 +172,7 @@ class YouRentaClient
             );
             $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
             $this->getClient()->wait(
-                WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-close'))
+                WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-overlay'))
             );
         }
 
