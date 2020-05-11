@@ -72,8 +72,7 @@ class YouRentaClient
     {
         $crawler = $this->getClient()->get('/login.html')->getCrawler();
         $crawler->filter('#login-form')->form(['enter_email' => $user->getLogin(), 'enter_pass' => $user->getPassword()]);
-        $this->getClient()->findElement(WebDriverBy::id('uniform-enter'));
-        $crawler->filter('#uniform-enter')->first()->click();
+        $this->getClient()->executeScript('document.getElementById("uniform-enter").click()');
         $this->client->waitFor('#cabinetcontent');
         $this->client->findElement(WebDriverBy::id('my-flat'))->click();
         $this->client->waitFor('.mainflat');
