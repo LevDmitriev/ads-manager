@@ -9,10 +9,12 @@ use App\Entity\YouRenta\YouRentaGuestCount;
 use App\Entity\YouRenta\YouRentaObjectType;
 use App\Entity\YouRenta\YouRentaUser;
 use App\HttpClients\YouRentaClient;
+use App\Repository\YouRenta\YouRentaUserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 use Faker\Factory;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Panther\DomCrawler\Crawler;
@@ -39,6 +41,9 @@ class YouRentaClientTest extends KernelTestCase
     public function setUp(): void
     {
         parent::setUp();
+        if (!static::$booted) {
+            static::bootKernel();
+        }
         $this->client = self::$container->get(YouRentaClient::class);
     }
 
@@ -61,16 +66,49 @@ class YouRentaClientTest extends KernelTestCase
     }
 
     /**
+     * Авторизация несколькох пользователей подряд без перезапуска браузера
+     * @dataProvider usersCollectionDataProvider
+     * @param ArrayCollection|YouRentaUser[] $users Пользователи
+     * @covers ::authorize
+     */
+    public function testAuthorizeUsersInRow(ArrayCollection $users)
+    {
+        foreach ($users as $user) {
+            $crowler = $this->client->authorize($user)->getClient()->getCrawler();
+            $this->assertInstanceOf(WebDriverElement::class,  $crowler->findElement(WebDriverBy::id('cabinetcontent')));
+        }
+    }
+
+    /**
+     * Провайдер коллекции пользователей
+     * @return ArrayCollection[][]|YouRentaUser[][][]
+     */
+    public function usersCollectionDataProvider()
+    {
+        if (!static::$booted) {
+            static::bootKernel();
+        }
+        $users = new ArrayCollection();
+        /** @var YouRentaUserRepository $repository */
+        $repository = static::$container->get(YouRentaUserRepository::class);
+        array_map(function ($user) use ($users) { return  $users->add($user); }, $repository->findAll());
+
+        return [[$users]];
+    }
+
+    /**
      * Провайдер пользователей
-     * @return YouRentaUser[]
+     * @return YouRentaUser[][]
      */
     public function userDataProvider()
     {
-        $user = new YouRentaUser();
-        $user->setLogin('gfdh6@mail.ru');
-        $user->setPassword(444444);
+        if (!static::$booted) {
+            static::bootKernel();
+        }
+        /** @var YouRentaUserRepository $repository */
+        $repository = static::$container->get(YouRentaUserRepository::class);
 
-        return [[$user]];
+        return array_map(function ($user) { return  [$user]; }, $repository->findAll());
     }
 
 
@@ -82,24 +120,20 @@ class YouRentaClientTest extends KernelTestCase
      */
     public function testAddAndDeleteAdvertisement(YouRentaAdvertisement $advertisement)
     {
-        $text = Crawler::xpathLiteral(implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()]));
         $crawlerAfterAdd = $this->client
             ->authorize($advertisement->getUser())
             ->addAdvertisement($advertisement)
             ->getClient()
             ->getCrawler()
-            ->filterXPath(
-                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
-            )
+            ->filterXPath($this->client->getXpathDeleteAdvertisementButton($advertisement))
         ;
         $this->assertCount(1, $crawlerAfterAdd);
         $crawlerAfterDelete = $this->client
+            ->authorize($advertisement->getUser())
             ->deleteAdvertisement($advertisement)
             ->getClient()
             ->getCrawler()
-            ->filterXPath(
-                "descendant::a[contains(string(.), $text)]/./ancestor::div[contains(@class, 'rd')]/descendant::a[contains(string(.), 'удалить')]"
-            )
+            ->filterXPath($this->client->getXpathDeleteAdvertisementButton($advertisement))
             ;
         $this->assertCount(0, $crawlerAfterDelete);
     }
@@ -113,38 +147,51 @@ class YouRentaClientTest extends KernelTestCase
      */
     public function testAddAndDeleteMultipleAdvertisements(ArrayCollection $advertisements)
     {
-        $this->client->authorize($advertisements->first()->getUser());
         /** @var YouRentaAdvertisement $advertisement */
         foreach ($advertisements as $advertisement) {
+            $this->client->authorize($advertisement->getUser());
             $crawlerAfterAdd = $this->client
                 ->addAdvertisement($advertisement)
                 ->getClient()
                 ->getCrawler()
-                ->filterXPath($this->client->getXpathAdvertisementInList($advertisement))
+                ->filterXPath($this->client->getXpathDeleteAdvertisementButton($advertisement))
             ;
             $this->assertCount(1, $crawlerAfterAdd);
         }
 
         foreach ($advertisements as $advertisement) {
-            $crawlerAfterAdd = $this->client
+            $this->client->authorize($advertisement->getUser());
+            $crawlerAfterDelete = $this->client
                 ->deleteAdvertisement($advertisement)
                 ->getClient()
                 ->getCrawler()
-                ->filterXPath($this->client->getXpathAdvertisementInList($advertisement))
+                ->filterXPath($this->client->getXpathDeleteAdvertisementButton($advertisement))
             ;
-            $this->assertCount(0, $crawlerAfterAdd);
+            $this->assertCount(0, $crawlerAfterDelete);
         }
     }
 
     /**
      * Провайдер объявлений
+     * @return YouRentaAdvertisement[][]
      */
     public function advertisementDataProvider()
     {
         if (!static::$booted) {
             static::bootKernel();
         }
-        $user = $this->userDataProvider()[0][0];
+        return [[$this->createAdvertisement($this->userDataProvider()[0][0])]];
+    }
+
+    /**
+     * Создать объявление
+     *
+     * @param YouRentaUser $user
+     *
+     * @return YouRentaAdvertisement
+     */
+    private function createAdvertisement(YouRentaUser $user): YouRentaAdvertisement
+    {
         $faker = Factory::create();
         $floor = $faker->randomNumber(1);
         $advertisement = new YouRentaAdvertisement();
@@ -169,12 +216,12 @@ class YouRentaClientTest extends KernelTestCase
         $advertisement->setRoomsNumber($faker->numberBetween(1, 3));
         $advertisement->setTotalArea($advertisement->getRoomsNumber() * 20);
         $advertisement->setYouTube($faker->url);
-
+        /** @var YouRentaCityDistrict|MockObject $district */
         $district = $this->getMockBuilder(YouRentaCityDistrict::class)->setMethods(['getValue'])->getMock();
         $district->method('getValue')->willReturn($faker->numberBetween(1, 3));
 
         $advertisement->setDistrict($district);
-
+        /** @var YouRentaGuestCount|MockObject $guestCount */
         $guestCount = $this->getMockBuilder(YouRentaGuestCount::class)->setMethods(['getValue'])->getMock();
         $guestCount->method('getValue')->willReturn($faker->numberBetween(1, 11));
         $advertisement->setGuestCount($guestCount);
@@ -202,19 +249,23 @@ class YouRentaClientTest extends KernelTestCase
         $objectType->method('getValue')->willReturn($faker->numberBetween(1, 2));
         $advertisement->setObjectType($objectType);
 
-        return [[$advertisement]];
+        return $advertisement;
     }
 
     /**
      * Провайдер коллекции объявлений
+     * @return ArrayCollection[][]|YouRentaAdvertisement[][][]
      */
     public function advertisementCollectionDataProvider()
     {
-        $collection = new ArrayCollection();
-        for ($i = 0; $i < 3; $i++) {
-            $collection->add($this->advertisementDataProvider()[0][0]);
+        $users = $this->usersCollectionDataProvider()[0][0];
+        $advertisements = new ArrayCollection();
+        foreach ($users as $user) {
+            for ($i = 0; $i < 3; $i++) {
+                $advertisements->add($this->createAdvertisement($user));
+            }
         }
 
-        return [[$collection]];
+        return [[$advertisements]];
     }
 }

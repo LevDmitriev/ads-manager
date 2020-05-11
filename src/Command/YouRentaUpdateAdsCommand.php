@@ -7,6 +7,7 @@ use App\Entity\YouRenta\YouRentaUser;
 use App\HttpClients\YouRentaClient;
 use App\Repository\YouRenta\YouRentaAdvertisementRepository;
 use App\Repository\YouRenta\YouRentaAdvertisementUpdatePeriodRepository;
+use App\Repository\YouRenta\YouRentaUserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,21 +22,21 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class YouRentaUpdateAdsCommand extends Command
 {
     /**
-     * @var YouRentaAdvertisementRepository
+     * @var YouRentaUserRepository
      */
-    private $advertisementRepository;
+    private $userRepository;
     /**
      * @var YouRentaClient
      */
     private $client;
 
     public function __construct(
-        YouRentaAdvertisementRepository $advertisementRepository,
+        YouRentaUserRepository $userRepository,
         YouRentaClient $client
     )
     {
         parent::__construct();
-        $this->advertisementRepository = $advertisementRepository;
+        $this->userRepository = $userRepository;
         $this->client = $client;
     }
     protected static $defaultName = 'yourenta:update:ads';
@@ -51,32 +52,14 @@ class YouRentaUpdateAdsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        /** @var int $period Кол-во секунд ожидания */
+        /** @var int Кол-во секунд ожидания */
         $period = (int) $input->getOption('period');
         while (true) {
-            /** @var ArrayCollection|YouRentaAdvertisement[] $advertisements Все объявления */
-            $advertisements = new ArrayCollection();
-            array_map(function ($advertisement) use ($advertisements) {
-                $advertisements->add($advertisement);
-            }, $this->advertisementRepository->findAll());
-            /** @var ArrayCollection|YouRentaUser[] $users Пользователи, которым пренадлежат объявления */
-            $users = new ArrayCollection();
-            $advertisements->map(function($advertisement) use ($users) {
-                /** @var YouRentaAdvertisement $advertisement */
-                if (!$users->contains($advertisement->getUser())) {
-                    $users->add($advertisement->getUser());
-                }
-            });
+            $users = $this->userRepository->findAll();
             foreach ($users as $user) {
                 $this->client->authorize($user);
                 /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
-                $userAdvertisements = $advertisements->filter(
-                    function ($advertisement) use ($user) {
-                        /** @var YouRentaAdvertisement $advertisement */
-                        return $advertisement->getUser() === $user;
-                    }
-                );
-                foreach ($userAdvertisements as $advertisement) {
+                foreach ($user->getAdvertisements() as $advertisement) {
                     $this->client->deleteAdvertisement($advertisement);
                     $this->client->addAdvertisement($advertisement);
                 }

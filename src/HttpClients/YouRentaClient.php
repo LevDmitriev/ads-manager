@@ -39,7 +39,7 @@ class YouRentaClient
      *
      * @return string
      */
-    public function getXpathAdvertisementInList(YouRentaAdvertisement $advertisement): string
+    public function getXpathDeleteAdvertisementButton(YouRentaAdvertisement $advertisement): string
     {
         $text = Crawler::xpathLiteral(
             implode(', ', [$advertisement->getStreet(), $advertisement->getBuildingNumber()])
@@ -59,9 +59,14 @@ class YouRentaClient
 
     /**
      * Авторизоваться
+     *
      * @param YouRentaUser $user Пользователь, под которым необходимо авторизоваться
      *
+     * @return YouRentaClient
+     * @throws \Facebook\WebDriver\Exception\NoSuchElementException
+     * @throws \Facebook\WebDriver\Exception\TimeoutException
      * @see \App\Tests\HttpClients\YouRentaClientTest::testAuthorize unit test
+     * @see \App\Tests\HttpClients\YouRentaClientTest::testAuthorizeUsersInRow unit test
      */
     public function authorize(YouRentaUser $user): self
     {
@@ -70,6 +75,8 @@ class YouRentaClient
         $this->getClient()->findElement(WebDriverBy::id('uniform-enter'));
         $crawler->filter('#uniform-enter')->first()->click();
         $this->client->waitFor('#cabinetcontent');
+        $this->client->findElement(WebDriverBy::id('my-flat'))->click();
+        $this->client->waitFor('.mainflat');
 
         return $this;
     }
@@ -130,9 +137,13 @@ class YouRentaClient
      * Удалить объявление с сайта
      *
      * @param YouRentaAdvertisement $advertisement Объявление
-     * @see \App\Tests\HttpClients\YouRentaClientTest::testAddAndDeleteAdvertisement unit test
      *
      * @return YouRentaClient
+     * @throws \Facebook\WebDriver\Exception\NoSuchElementException
+     * @throws \Facebook\WebDriver\Exception\TimeoutException
+     * @see \App\Tests\HttpClients\YouRentaClientTest::testAddAndDeleteAdvertisement unit test
+     * @see \App\Tests\HttpClients\YouRentaClientTest::testAddAndDeleteMultipleAdvertisements unit test
+     *
      */
     public function deleteAdvertisement(YouRentaAdvertisement $advertisement): self
     {
@@ -143,11 +154,11 @@ class YouRentaClient
         $crawler = $this
             ->getClient()
             ->getCrawler()
-            ->filterXPath($this->getXpathAdvertisementInList($advertisement))
+            ->filterXPath($this->getXpathDeleteAdvertisementButton($advertisement))
         ;
         if ($crawler->count()) {
             $this->getClient()
-                ->findElement(WebDriverBy::xpath($this->getXpathAdvertisementInList($advertisement)))
+                ->findElement(WebDriverBy::xpath($this->getXpathDeleteAdvertisementButton($advertisement)))
                 ->click()
             ;
             $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
