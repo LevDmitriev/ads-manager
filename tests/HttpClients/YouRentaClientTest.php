@@ -140,6 +140,8 @@ class YouRentaClientTest extends KernelTestCase
 
     /**
      * Тест на добавление и удаление множества объявлений
+     * @covers ::addAdvertisement
+     * @covers ::deleteAdvertisement
      * @param ArrayCollection<YouRentaAdvertisement>  $advertisements
      * @dataProvider advertisementCollectionDataProvider
      * @throws \Facebook\WebDriver\Exception\NoSuchElementException

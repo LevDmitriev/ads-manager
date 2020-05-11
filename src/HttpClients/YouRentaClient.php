@@ -157,6 +157,7 @@ class YouRentaClient
             ->filterXPath($this->getXpathDeleteAdvertisementButton($advertisement))
         ;
         if ($crawler->count()) {
+            $this->removeFixedFooter();
             $this->getClient()
                 ->findElement(WebDriverBy::xpath($this->getXpathDeleteAdvertisementButton($advertisement)))
                 ->click()
@@ -173,5 +174,17 @@ class YouRentaClient
         }
 
         return $this;
+    }
+
+    /**
+     * Удалить зафиксированный футер с соцсетями.
+     * Из-за того, что он зафиксирован, он мешает кликать на элементы, которые находятся под ним.
+     */
+    private function removeFixedFooter()
+    {
+        $this->getClient()->waitFor('#fb-root');
+        $this->getClient()->executeScript("document.getElementById('fb-root').remove()");
+        $this->getClient()->waitFor('.s70');
+        $this->getClient()->executeScript("document.querySelector('.s70').remove()");
     }
 }
