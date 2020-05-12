@@ -55,14 +55,18 @@ class YouRentaUpdateAdsCommand extends Command
         /** @var int Кол-во секунд ожидания */
         $period = (int) $input->getOption('period');
         while (true) {
-            try {
                 $users = $this->userRepository->findAll();
                 foreach ($users as $user) {
-                    $this->client->authorize($user);
-                    /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
-                    foreach ($user->getAdvertisements() as $advertisement) {
-                        $this->client->deleteAdvertisement($advertisement);
-                        $this->client->addAdvertisement($advertisement);
+                    try {
+                        $this->client->authorize($user);
+                        /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
+                        foreach ($user->getAdvertisements() as $advertisement) {
+                            $this->client->deleteAdvertisement($advertisement);
+                            $this->client->addAdvertisement($advertisement);
+                        }
+                    } catch (\Throwable $exception) {
+                        $io->error($exception->getMessage());
+                        $io->error($exception->getTraceAsString());
                     }
 
                     $io->writeln(implode(' ',
@@ -75,10 +79,6 @@ class YouRentaUpdateAdsCommand extends Command
                                           ]
                                   ));
                 }
-            } catch (\Throwable $exception) {
-                $io->error($exception->getMessage());
-                $io->error($exception->getTraceAsString());
-            }
 
             $io->writeln("Ждём $period секунд");
             sleep($period);
