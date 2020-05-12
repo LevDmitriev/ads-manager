@@ -93,8 +93,10 @@ class YouRentaClient
     public function addAdvertisement(YouRentaAdvertisement $advertisement): self
     {
         $crawler = $this->client->get('/add-flat.html')->getCrawler();
+        $formCssSelector = 'form[action="//yourenta.ru/user-add-flat.html"]';
+        $this->client->waitFor($formCssSelector);
         /** @var Form $form Форма добавления объявления */
-        $form = $crawler->filter('form[action="//yourenta.ru/user-add-flat.html"]')->form();
+        $form = $crawler->filter($formCssSelector)->form();
         $form->setValues([
                              'object_f' => $advertisement->getObjectType()->getValue(),
                              'rayon_f' => $advertisement->getDistrict()->getValue(),
