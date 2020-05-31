@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Throwable;
 
 /**
  * Команда для обновления объявлений YouRenta
@@ -61,10 +62,12 @@ class YouRentaUpdateAdsCommand extends Command
                         $this->client->authorize($user);
                         /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
                         foreach ($user->getAdvertisements() as $advertisement) {
-                            $this->client->deleteAdvertisement($advertisement);
-                            $this->client->addAdvertisement($advertisement);
+                            $this->client
+                                ->deleteAdvertisement($advertisement)
+                                ->addAdvertisement($advertisement)
+                                ;
                         }
-                    } catch (\Throwable $exception) {
+                    } catch (Throwable $exception) {
                         $io->error($exception->getMessage());
                         $io->error($exception->getTraceAsString());
                     }

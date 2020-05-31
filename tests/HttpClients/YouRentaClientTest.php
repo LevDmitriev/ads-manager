@@ -174,6 +174,26 @@ class YouRentaClientTest extends KernelTestCase
     }
 
     /**
+     * @covers ::deleteAllAdvertisements
+     *
+     * @param YouRentaUser $user
+     * @dataProvider ::userDataProvider
+     */
+    public function testDeleteAllAdvertisements(YouRentaUser $user)
+    {
+        $this->client->authorize($user);
+        $this->client->addAdvertisement($this->createAdvertisement($user));
+        $this->client->addAdvertisement($this->createAdvertisement($user));
+        $crawlerAfterDelete = $this->client->deleteAllAdvertisements($user)
+                                ->getClient()
+                                ->getCrawler()
+                                ->filter('.flat')
+        ;
+        $this->assertCount(0, $crawlerAfterDelete);
+
+    }
+
+    /**
      * Провайдер объявлений
      * @return YouRentaAdvertisement[][]
      */
@@ -198,7 +218,7 @@ class YouRentaClientTest extends KernelTestCase
         $floor = $faker->randomNumber(1);
         $advertisement = new YouRentaAdvertisement();
         $advertisement->setUser($user);
-        $advertisement->setDescription($faker->text);
+        $advertisement->setDescription(md5((string) microtime()));
         $advertisement->setBuildingNumber($faker->buildingNumber);
         $advertisement->setConditioner($faker->boolean());
         $advertisement->setParking($faker->boolean());
