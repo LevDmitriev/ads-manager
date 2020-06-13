@@ -162,19 +162,21 @@ class YouRentaClient
         ;
         if ($crawler->count()) {
             $this->removeFixedFooter();
-            $this->getClient()
-                ->findElement(WebDriverBy::xpath($this->getXpathDeleteAdvertisementButton($advertisement)))
-                ->click()
-            ;
-            $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
-            $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
-            $this->getClient()->wait()->until(
-                WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
+            $deleteButtons = $this->getClient()->findElements(
+                WebDriverBy::xpath($this->getXpathDeleteAdvertisementButton($advertisement))
             );
-            $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
-            $this->getClient()->wait(
-                WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-overlay'))
-            );
+            foreach ($deleteButtons as $deleteButton) {
+                $deleteButton->click();
+                $this->getClient()->wait(WebDriverExpectedCondition::alertIsPresent());
+                $this->getClient()->getWebDriver()->switchTo()->alert()->accept();
+                $this->getClient()->wait()->until(
+                    WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id('fancybox-close'))
+                );
+                $this->getClient()->findElement(WebDriverBy::id('fancybox-close'))->click();
+                $this->getClient()->wait(
+                    WebDriverExpectedCondition::invisibilityOfElementLocated(WebDriverBy::id('fancybox-overlay'))
+                );
+            }
         }
 
         return $this;
