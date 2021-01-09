@@ -30,7 +30,7 @@ class YouRentaClientTest extends KernelTestCase
 
     private $client;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         if (!static::$booted) {
