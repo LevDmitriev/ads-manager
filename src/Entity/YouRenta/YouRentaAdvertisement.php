@@ -4,10 +4,12 @@ namespace App\Entity\YouRenta;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\YouRenta\YouRentaAdvertisementRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class YouRentaAdvertisement
 {
@@ -492,6 +494,15 @@ class YouRentaAdvertisement
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PreUpdate()
+     * @param PreUpdateEventArgs $event
+     */
+    public function preUpdate(PreUpdateEventArgs $event)
+    {
+        $event->getObject()->setStreet(trim(str_replace('  ', ' ', $this->getStreet())));
     }
 
     public function __toString()

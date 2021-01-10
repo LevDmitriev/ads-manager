@@ -4,9 +4,11 @@ namespace App\HttpClients;
 
 use App\Entity\YouRenta\YouRentaAdvertisement;
 use App\Entity\YouRenta\YouRentaUser;
+use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use PharIo\Manifest\InvalidUrlException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
 use Symfony\Component\Panther\DomCrawler\Form;
@@ -25,12 +27,17 @@ class YouRentaClient
      * @var StorageInterface
      */
     private $storage;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
-    public function __construct(StorageInterface $storage)
+    public function __construct(StorageInterface $storage, LoggerInterface $logger)
     {
         // Все настройки клиента через окружение
         $this->client = Client::createChromeClient(null, null, [],'https://yourenta.ru');
         $this->storage = $storage;
+        $this->logger = $logger;
     }
 
     /**
@@ -188,9 +195,16 @@ class YouRentaClient
      */
     private function removeFixedFooter()
     {
-        $this->getClient()->waitFor('#fb-root');
-        $this->getClient()->executeScript("document.getElementById('fb-root').remove()");
-        $this->getClient()->waitFor('.s70');
-        $this->getClient()->executeScript("document.querySelector('.s70').remove()");
+        try {
+            $footer = $this->getClient()->findElement(WebDriverBy::id('fb-root'));
+            if ($footer) {
+                $this->getClient()->executeScript("document.getElementById('fb-root').remove()");
+                $this->getClient()->waitFor('.s70');
+                $this->getClient()->executeScript("document.querySelector('.s70').remove()");
+            }
+        } catch (NoSuchElementException $e) {
+            // ничего не делаем
+        }
+        //$this->getClient()->waitFor('#fb-root');
     }
 }

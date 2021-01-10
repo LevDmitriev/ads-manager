@@ -62,10 +62,10 @@ class YouRentaUpdateAdsCommand extends Command
                         $this->client->authorize($user);
                         /** @var ArrayCollection<YouRentaAdvertisement> $advertisements Все объявления пользователя */
                         foreach ($user->getAdvertisements() as $advertisement) {
-                            $this->client
-                                ->deleteAdvertisement($advertisement)
-                                ->addAdvertisement($advertisement)
-                                ;
+                            $this->client->deleteAdvertisement($advertisement);
+                        }
+                        foreach ($user->getAdvertisements() as $advertisement) {
+                            $this->client->addAdvertisement($advertisement);
                         }
                     } catch (Throwable $exception) {
                         $io->error($exception->getMessage());
